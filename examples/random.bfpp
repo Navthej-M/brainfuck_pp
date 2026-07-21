@@ -1,0 +1,11 @@
+# EXAMPLE-2
+# RANDOM
+#
+# Explanation:
+#   Will display a single-digit random number and display it
+#
+# Compilation:
+#  This will work under the default compiler options.
+#  `bfppc random.bfpp -o path/to/executable/`
+
++++++++++?++++++++++++++++++++++++++++++++++++++++++++++++.>++++++++++.
