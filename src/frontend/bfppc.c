@@ -99,7 +99,7 @@ bool output(const char *output_name, const char *code, bool show_temp) {
 
     {
         char command[_tmp_files_path_max_size * 3];
-        snprintf(command, sizeof(command), "as \"%s\" -o \"%s\"", tmp_asm,
+        snprintf(command, sizeof(command), CC " \"%s\" -o \"%s\"", tmp_asm,
                  tmp_obj);
 
         if (system(command) != 0) {
