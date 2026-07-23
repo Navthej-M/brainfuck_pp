@@ -1,14 +1,15 @@
-#include <stddef.h>
 #define _DEFAULT_SOURCE
 
 #include "bfppc.h"
 #include "tokenizer.h"
 #include "version.h"
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
 
 static instruct_type prv_instruct = instruct_NONE;
 static size_t prv_instruct_count = 0;
