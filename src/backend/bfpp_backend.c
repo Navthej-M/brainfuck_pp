@@ -1,7 +1,4 @@
 #include "bfpp_backend.h"
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_render.h>
-#include <SDL2/SDL_video.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
