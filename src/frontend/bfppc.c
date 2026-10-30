@@ -10,7 +10,6 @@
 #include <string.h>
 #include <unistd.h>
 
-
 static instruct_type prv_instruct = instruct_NONE;
 static size_t prv_instruct_count = 0;
 
@@ -23,19 +22,19 @@ static size_t highest_loop_brakepoint = 0;
 constexpr char _init_templete[] =
     "# bfpcc generated code (version " bfppc_version_string ")\n\n"
     "# backend functions\n"
-    ".extern bfpp_backend_init\n"
-    ".extern bfpp_backend_destroy\n"
-    ".extern bfpp_backend_get_curret_cell_value\n"
-    ".extern bfpp_backend_ptr_inc\n"
-    ".extern bfpp_backend_ptr_dec\n"
-    ".extern bfpp_backend_ptr_value_add\n"
-    ".extern bfpp_backend_ptr_value_sub\n"
-    ".extern bfpp_backend_putchar\n"
-    ".extern bfpp_backend_getchar\n"
-    ".extern bfpp_backend_setreg\n"
-    ".extern bfpp_backend_getreg\n"
-    ".extern bfpp_backend_random\n"
-    ".extern bfpp_backend_exec\n"
+    ".extern runtime_init\n"
+    ".extern runtime_destroy\n"
+    ".extern runtime_get_curret_cell_value\n"
+    ".extern runtime_ptr_inc\n"
+    ".extern runtime_ptr_dec\n"
+    ".extern runtime_ptr_value_add\n"
+    ".extern runtime_ptr_value_sub\n"
+    ".extern runtime_putchar\n"
+    ".extern runtime_getchar\n"
+    ".extern runtime_setreg\n"
+    ".extern runtime_getreg\n"
+    ".extern runtime_random\n"
+    ".extern runtime_exec\n"
     "\n.section .text\n"
     "\n.global main\n"
     ".type main, @function\n"
@@ -45,7 +44,7 @@ constexpr char _init_templete[] =
     "    # initilizing the backend\n"
     "    movq        $%ld, %%rdi # max registers\n"
     "    movq        $%ld, %%rsi # tape size\n"
-    "    call        bfpp_backend_init\n\n";
+    "    call        runtime_init\n\n";
 
 // private
 
@@ -64,7 +63,7 @@ bool error(Token token, const char *input_filename, const char *details,
 }
 
 bool output(const char *output_name, const char *code, bool show_temp) {
-    const char *backend_lib = "libbfpp_backend.a";
+    const char *backend_lib = "libbfpp_runtime.a";
 
     char tmp_asm[_tmp_files_path_max_size];
     char tmp_obj[_tmp_files_path_max_size];
@@ -99,8 +98,9 @@ bool output(const char *output_name, const char *code, bool show_temp) {
 
     {
         char command[_tmp_files_path_max_size * 3];
-        snprintf(command, sizeof(command), CC " \"%s\" -o \"%s\"", tmp_asm,
-                 tmp_obj);
+        snprintf(command, sizeof(command),
+                 CC " \"%s\" -L/usr/local/lib -l:\"%s\" -o \"%s\"", tmp_asm,
+                 backend_lib, output_name);
 
         if (system(command) != 0) {
             fprintf(stderr, "error: unexpected behaivour during assembling.\n");
@@ -108,17 +108,17 @@ bool output(const char *output_name, const char *code, bool show_temp) {
         }
     }
 
-    {
-        char command[_tmp_files_path_max_size * 3];
-        snprintf(command, sizeof(command),
-                 CC " \"%s\" -L/usr/local/lib -l:\"%s\" -o \"%s\"", tmp_obj,
-                 backend_lib, output_name);
-
-        if (system(command) != 0) {
-            fprintf(stderr, "error: unexpected behaivour during linking.\n");
-            return false;
-        }
-    }
+    // {
+    //     char command[_tmp_files_path_max_size * 3];
+    //     snprintf(command, sizeof(command),
+    //              CC " \"%s\" -L/usr/local/lib -l:\"%s\" -o \"%s\"", tmp_obj,
+    //              backend_lib, output_name);
+    //
+    //     if (system(command) != 0) {
+    //         fprintf(stderr, "error: unexpected behaivour during linking.\n");
+    //         return false;
+    //     }
+    // }
 
     return true;
 }
@@ -140,24 +140,24 @@ void add_instruct(char **code, size_t *code_size, instruct_type instruct_,
         return;
 
     case instruct_right:
-        strcpy(instruct, "    call        bfpp_backend_ptr_inc\n\n");
+        strcpy(instruct, "    call        runtime_ptr_inc\n\n");
         break;
     case instruct_left:
-        strcpy(instruct, "    call        bfpp_backend_ptr_dec\n\n");
+        strcpy(instruct, "    call        runtime_ptr_dec\n\n");
         break;
     case instruct_add:
-        strcpy(instruct, "    call        bfpp_backend_ptr_value_add\n\n");
+        strcpy(instruct, "    call        runtime_ptr_value_add\n\n");
         break;
     case instruct_sub:
-        strcpy(instruct, "    call        bfpp_backend_ptr_value_sub\n\n");
+        strcpy(instruct, "    call        runtime_ptr_value_sub\n\n");
         break;
 
     case instruct_putc:
-        strcpy(instruct, "    call        bfpp_backend_putchar\n\n");
+        strcpy(instruct, "    call        runtime_putchar\n\n");
         setarg_size = 0;
         break;
     case instruct_getc:
-        strcpy(instruct, "    call        bfpp_backend_getchar\n\n");
+        strcpy(instruct, "    call        runtime_getchar\n\n");
         setarg_size = 0;
         break;
 
@@ -176,7 +176,7 @@ void add_instruct(char **code, size_t *code_size, instruct_type instruct_,
         char buf[1024];
         snprintf(buf, 1024,
                  "\n# loop %ld end\n"
-                 "call        bfpp_backend_get_curret_cell_value\n"
+                 "call        runtime_get_curret_cell_value\n"
                  "cmpq        $0, %%rax\n"
                  "jne         __loop_%ld_\n\n",
                  loop_breakpoints[highest_loop_brakepoint],
@@ -189,20 +189,20 @@ void add_instruct(char **code, size_t *code_size, instruct_type instruct_,
     }
 
     case instruct_setreg:
-        strcpy(instruct, "    call        bfpp_backend_setreg\n\n");
+        strcpy(instruct, "    call        runtime_setreg\n\n");
         break;
 
     case instruct_getreg:
-        strcpy(instruct, "    call        bfpp_backend_getreg\n\n");
+        strcpy(instruct, "    call        runtime_getreg\n\n");
         break;
 
     case instruct_random:
-        strcpy(instruct, "    call        bfpp_backend_random\n\n");
+        strcpy(instruct, "    call        runtime_random\n\n");
         setarg_size = 0;
         break;
 
     case instruct_exec:
-        strcpy(instruct, "    call        bfpp_backend_exec\n\n");
+        strcpy(instruct, "    call        runtime_exec\n\n");
         setarg_size = 0;
         break;
     }
@@ -369,7 +369,7 @@ bool bfppc_compile(Token *tokens, Options options) {
 
     constexpr char exit_code[] = "\n"
                                  "    # destroying backend\n"
-                                 "    call        bfpp_backend_destroy\n\n"
+                                 "    call        runtime_destroy\n\n"
                                  "    # Exiting with code 0\n"
                                  "    xorq        %rax, %rax\n"
                                  "    popq        %rbp\n"

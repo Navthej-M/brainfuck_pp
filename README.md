@@ -27,7 +27,7 @@ This is very simple; to put a comment use '#', like in Python
 Registers will actually store value and also give it's value.
 The two new symbols are:
 - '=n' will set a register n's value to the value of current cell
-- '$n' will set the value of current cell to the value of register r
+- '$n' will set the value of current cell to the value of register n
 
 **Example**
 ```

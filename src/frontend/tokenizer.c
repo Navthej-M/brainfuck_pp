@@ -17,7 +17,7 @@ Token *tokenize(const char *code, size_t size) {
         }
     }
 
-    for (size_t ip = 0, col = 0, line = 1; ip < size; ip++) {
+    for (size_t ip = 0, col = 0, line = 1; ip < size; ++ip) {
         switch (code[ip]) {
         case 0x00:
             continue;
@@ -90,6 +90,8 @@ Token *tokenize(const char *code, size_t size) {
 
                     tokens = realloc(tokens, (tokens_size + 1) * sizeof(Token));
                     ++col;
+
+                    break;
                 }
             }
             break;
