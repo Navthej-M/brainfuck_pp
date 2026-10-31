@@ -1,9 +1,12 @@
 # Brainfuck++
 
+NOTE: This is only tested on Linux. If you use other OS, it ain't sure it going to work.
+
 ## Compiler
 First let's talk about the compiler.
-The compiler generates basic x86-64 assembly code which uses bf++ backend.
-Now the assembly is assembled into object code and is statically linked with the backend.
+The compiler generates basic x86_64 assembly code which uses BFPP runtime.
+
+It translates the code into Assembly and link with the BFPP runtime and compile with GCC (by default) to produce an x86_64 executable.
 Now, the executable is ready to run!
 This assembles and links using *gcc* by default.
 
